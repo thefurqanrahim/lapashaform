@@ -29,8 +29,6 @@ router.get("/admin/quote", getAdminQuoteData);
 //User Authentication and Authorization
 router.post("/register", postRegisterData);
 router.post("/login", postLoginData);
-router.post("/quote", postQuoteData);
-router.get("/quote", getQuoteData);
 
 //Patio endpoints
 router.get("/formdata", getFormData);
