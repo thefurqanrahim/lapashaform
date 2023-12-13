@@ -97,14 +97,13 @@ module.exports.postAdminQuoteData = async (req, res) => {
 // User Authentication and Authorization
 
 module.exports.postRegisterData = async (req, res) => {
-  // proxy.web(req, res, { target: 'http://52.204.170.61:8000' });
-  console.log(req.body);
   try {
+    console.log(req.body);
     const newPassword = await bcrypt.hash(req.body.authPassword, 10);
     await User.create({
-      name: req.body.authName,
-      email: req.body.authEmail,
-      password: newPassword
+      authName: req.body.authName,
+      authEmail: req.body.authEmail,
+      authPassword: newPassword
     });
     res.json({ status: "ok" });
   } catch (err) {
@@ -113,17 +112,19 @@ module.exports.postRegisterData = async (req, res) => {
 };
 
 module.exports.postLoginData = async (req, res) => {
-  // proxy.web(req, res, { target: 'http://52.204.170.61:8000' });
   const user = await User.findOne({
-    authEmail: req.body.email
+    authEmail: req.body.authEmail
   });
+
   if (!user) {
-    return { status: "error", error: "Invalid login" };
+    return res.json({ status: "error", error: "Invalid login" });
   }
+
   const isPasswordValid = await bcrypt.compare(
     req.body.authPassword,
-    user.password
+    user.authPassword
   );
+
   if (isPasswordValid) {
     const token = jwt.sign(
       {
@@ -136,37 +137,6 @@ module.exports.postLoginData = async (req, res) => {
     return res.json({ status: "ok", user: token });
   } else {
     return res.json({ status: "error", user: false });
-  }
-};
-
-module.exports.getQuoteData = async (req, res) => {
-  // proxy.web(req, res, { target: 'http://52.204.170.61:8000' });
-  const token = req.headers["x-access-token"];
-
-  try {
-    const decoded = jwt.verify(token, "secret123");
-    const email = decoded.email;
-    const user = await User.findOne({ email: email });
-    return res.json({ status: "ok", quote: user.quote });
-  } catch (error) {
-    console.log(error);
-    res.json({ status: "error", error: "invalid token" });
-  }
-};
-
-module.exports.postQuoteData = async (req, res) => {
-  // proxy.web(req, res, { target: 'http://52.204.170.61:8000' });
-  const token = req.headers["x-access-token"];
-
-  try {
-    const decoded = jwt.verify(token, "secret123");
-    const email = decoded.email;
-    await User.updateOne({ email: email }, { $set: { quote: req.body.quote } });
-
-    return res.json({ status: "ok" });
-  } catch (error) {
-    console.log(error);
-    res.json({ status: "error", error: "invalid token" });
   }
 };
 
